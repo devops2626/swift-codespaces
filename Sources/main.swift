@@ -1,1 +1,1 @@
-print("Hello from Swift on GitHub Codespaces! 🐋")
+// Removed: app lives under Sources/App

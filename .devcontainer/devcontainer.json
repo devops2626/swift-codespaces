@@ -1,5 +1,5 @@
 {
-  "name": "Swift",
+  "name": "Swift Image API",
   "image": "swift:latest",
   "customizations": {
     "vscode": {
@@ -16,5 +16,12 @@
     "--security-opt",
     "seccomp=unconfined"
   ],
-  "postCreateCommand": "swift --version"
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Image Analysis API",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libvips-tools tesseract-ocr tesseract-ocr-eng pkg-config curl && swift --version && vips --version && tesseract --version"
 }

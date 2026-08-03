@@ -2,14 +2,23 @@
 import PackageDescription
 
 let package = Package(
-    name: "Hello",
+    name: "swift-codespaces",
+    platforms: [
+        .macOS(.v14)
+    ],
     products: [
-        .executable(name: "Hello", targets: ["Hello"])
+        .executable(name: "App", targets: ["App"])
+    ],
+    dependencies: [
+        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0")
     ],
     targets: [
         .executableTarget(
-            name: "Hello",
-            path: "Sources"
+            name: "App",
+            dependencies: [
+                .product(name: "Hummingbird", package: "hummingbird")
+            ],
+            path: "Sources/App"
         )
     ]
 )
