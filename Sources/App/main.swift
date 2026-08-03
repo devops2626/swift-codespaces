@@ -1,3 +1,4 @@
+import Foundation
 import Hummingbird
 import Logging
 
@@ -47,7 +48,7 @@ func analyze(_ request: Request, _ context: some RequestContext) async throws ->
     let data = Data(buffer.readableBytesView)
 
     guard !data.isEmpty else {
-        throw HTTPError(.badRequest, message: "Empty body. Send raw image bytes with Content-Type image/* or use multipart in a later phase.")
+        throw HTTPError(.badRequest, message: "Empty body. Send raw image bytes with Content-Type image/*.")
     }
 
     let contentType = request.headers[.contentType].map(String.init) ?? ""
@@ -61,7 +62,9 @@ func analyze(_ request: Request, _ context: some RequestContext) async throws ->
 
     let wantOCR: Bool = {
         let query = request.uri.query ?? ""
-        return query.split(separator: "&").contains { $0 == "ocr=true" || $0.hasPrefix("ocr=true") }
+        return query.split(separator: "&").contains { part in
+            part == "ocr=true" || part.hasPrefix("ocr=true")
+        }
     }()
 
     let info = try ImageTools.inspect(data: data)
@@ -85,22 +88,18 @@ func analyze(_ request: Request, _ context: some RequestContext) async throws ->
 }
 
 func looksLikeImage(_ data: Data) -> Bool {
-    // PNG
     if data.count >= 8 {
         let png: [UInt8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
         if Array(data.prefix(8)) == png { return true }
     }
-    // JPEG
     if data.count >= 3 {
         let jpeg: [UInt8] = [0xFF, 0xD8, 0xFF]
         if Array(data.prefix(3)) == jpeg { return true }
     }
-    // GIF
     if data.count >= 6 {
         let s = String(data: data.prefix(6), encoding: .ascii) ?? ""
         if s.hasPrefix("GIF87a") || s.hasPrefix("GIF89a") { return true }
     }
-    // WebP (RIFF....WEBP)
     if data.count >= 12 {
         let riff = String(data: data.prefix(4), encoding: .ascii)
         let webp = String(data: data.subdata(in: 8..<12), encoding: .ascii)
@@ -108,5 +107,3 @@ func looksLikeImage(_ data: Data) -> Bool {
     }
     return false
 }
-
-import Foundation
